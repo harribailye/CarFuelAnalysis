@@ -16,7 +16,7 @@ out.width = "70%",
 fig.align = "center", 
 root.dir = '../'
 )
-pacman::p_load(tidyverse, tidymodels, ggplot, kernlab, textrecipes, skimr, doParallel, ranger, dplyr, knitr, glue, patchwork, vip, stringr)
+pacman::p_load(tidyverse, tidymodels, kernlab, textrecipes, skimr, doParallel, ranger, dplyr, knitr, glue, patchwork, vip, stringr)
 ```
 
 ## Load in the data 
@@ -55,7 +55,6 @@ car <- car %>%
 head(car)
 ```
 
-\newpage
 ### EDA 03: Clean columns 
 We will now clean the columns, converting them into the right form and removing the units of measurement for each data point.
 
@@ -126,7 +125,6 @@ car_test <- testing(car_split)
 ```
 
 ### Preprocessing 02: Create the recipe
-We will create dummy variables for all the nomial predictors, which in this case is the address.
 ```{r}
 car_recipe <-
   recipe(`Fuel effciency` ~., data = car_train) %>%
