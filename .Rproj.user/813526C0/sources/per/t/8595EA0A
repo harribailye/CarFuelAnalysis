@@ -1,0 +1,28 @@
+{
+    "id": "8595EA0A",
+    "path": "~/Documents/Data Science/CV/Analysis/FuelEfficiencyAnalysis.Rmd",
+    "project_path": "FuelEfficiencyAnalysis.Rmd",
+    "type": "r_markdown",
+    "hash": "4088804323",
+    "contents": "",
+    "dirty": false,
+    "created": 1638937904077.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "86,31",
+        "scrollLine": "62",
+        "last_setup_crc32": ""
+    },
+    "folds": "89|46|99|8|\n90|6|97|0|\n100|65|115|8|\n103|94|113|0|\n116|16|138|8|\n119|47|126|0|\n121|6|125|0|\n127|39|138|8|\n129|6|136|0|\n139|12|216|8|\n141|34|148|0|\n143|6|147|0|\n149|37|157|0|\n151|6|156|0|\n158|39|180|0|\n160|6|164|0|\n167|6|169|0|\n172|6|179|0|\n181|33|191|0|\n183|6|185|0|\n188|6|190|0|\n192|39|198|0|\n194|6|197|0|\n199|32|205|8|\n201|6|203|0|\n206|41|216|8|\n208|6|212|0|\n217|13|247|0|\n218|39|225|0|\n220|6|224|0|\n226|46|236|0|\n228|6|235|0|\n237|45|247|0|\n239|6|246|0|\n248|13|261|3|\n250|23|261|0|\n",
+    "lastKnownWriteTime": 1639041288,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1639041296653,
+    "read_only": false,
+    "read_only_alternatives": []
+}

@@ -1,0 +1,6 @@
+"0","car %>%"
+"0","  ggplot(aes(`Avr. RPM`, `Fuel effciency`, col = `Fuel effciency`)) +"
+"0","  geom_point() +"
+"0","  ggtitle(""A Plot of Fuel Efficiency over Average RPM"") +"
+"0","  xlab(""Average RPM"") +"
+"0","  ylab(""Fuel Efficiency (L/100km)"")"

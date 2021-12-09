@@ -1,0 +1,6 @@
+"0","car %>%"
+"0","  ggplot(aes(`Safe Driving Score`, `Fuel effciency`, col = `Fuel effciency`)) +"
+"0","  geom_point() +"
+"0","  ggtitle(""A Plot of Fuel Efficiency over Maximum Speed"") +"
+"0","  xlab(""Maximum Speed (km/h)"") +"
+"0","  ylab(""Fuel Efficiency (L/100km)"")"

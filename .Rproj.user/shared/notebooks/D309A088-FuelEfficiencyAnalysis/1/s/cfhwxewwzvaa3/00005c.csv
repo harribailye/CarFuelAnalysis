@@ -1,0 +1,5 @@
+"0","car <- car %>%"
+"0","  select(-c(`Driving Start Time`, `Driving Finish Time`, `Max Engine Oil Temp`, "
+"0","            `Fuel Cost`, `Speeding Normal count`, `Speeding Hard count`, "
+"0","            `Rapid Acc. Hard Count`, `Rapid Acc. Normal Count`, `Driving Time`))"
+"0","head(car)"

@@ -1,0 +1,38 @@
+"0","knitr::opts_chunk$set("
+"0","echo = TRUE, "
+"0","fig.width = 10, "
+"0","fig.asp = 0.618, "
+"0","out.width = ""70%"","
+"0","fig.align = ""center"", "
+"0","root.dir = '../'"
+"0",")"
+"0","pacman::p_load(tidyverse, tidymodels, ggplot, kernlab, textrecipes, skimr, doParallel, ranger, dplyr, knitr, glue, patchwork, vip, stringr)"
+"2","Installing package into ‘/Users/harribailye/Library/R/x86_64/4.1/library’
+(as ‘lib’ is unspecified)
+"
+"2","Warning:"
+"2"," package ‘ggplot’ is not available for this version of R
+
+A version of this package for your version of R might be available elsewhere,
+see the ideas at
+https://cran.r-project.org/doc/manuals/r-patched/R-admin.html#Installing-packages
+"
+"2","Warning:"
+"2"," 'BiocManager' not available.  Could not check Bioconductor.
+
+Please use `install.packages('BiocManager')` and then retry.
+"
+"2","Warning in p_install(package, character.only = TRUE, ...) :"
+"2"," 
+"
+"2","Warning in library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :"
+"2","
+ "
+"2"," there is no package called ‘ggplot’
+"
+"2","Warning in pacman::p_load(tidyverse, tidymodels, ggplot, kernlab, textrecipes,  :"
+"2","
+ "
+"2"," Failed to install/load:
+ggplot
+"

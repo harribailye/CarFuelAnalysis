@@ -1,0 +1,6 @@
+"0","car %>%"
+"0","  ggplot(aes(`Fuel effciency`)) +"
+"0","  geom_histogram(col = ""black"", fill = ""orange"", bins = 20) +"
+"0","  xlab(""Fuel Efficiency"") +"
+"0","  ylab(""Count"") +"
+"0","  ggtitle(""A Plot of the Distribution of Fuel Efficiency"") "
