@@ -1,0 +1,262 @@
+---
+title: "Car Fuel Efficiency Analysis"
+author: "Harrison Bailye"
+date: "08/12/2021"
+output:
+  pdf_document:
+    toc: yes
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+echo = TRUE, 
+fig.width = 10, 
+fig.asp = 0.618, 
+out.width = "70%",
+fig.align = "center", 
+root.dir = '../'
+)
+pacman::p_load(tidyverse, tidymodels, ggplot, kernlab, textrecipes, skimr, doParallel, ranger, dplyr, knitr, glue, patchwork, vip, stringr)
+```
+
+## Load in the data 
+Data from my Subaru Impreza was collected using an OBD reader and was exported into a csv file. This data will be used throughout the report to make meaningful insights about the fuel efficiency of the car.
+```{r, results= 'hide'}
+car <- read_csv("Driving.csv")
+```
+
+## Select data and method
+It was decided that a ridge regression approach will be used to fit the model, where the fuel efficiency of the car will be the response variable. As fuel efficiency is a numeric variable, the model will be a regression model (outputs a value) not a classification model (classifies the result into a class). 
+
+\newpage
+## EDA
+Before a model can be constructed, it is important to perform explanatory data analysis (EDA) to ensure that the data is clean and in the correct form and also to investigate relationships between predictors and the response variable.
+
+### EDA 01: View the data
+To begin with, we will view the data to see what needs to be fixed before working with the data. 
+```{r}
+head(car)
+```
+
+We can omit the missing data points as there are not many of them so omitting them won't have much of an impact on the results. 
+```{r}
+car <- car %>%
+  na.omit()
+```
+
+### EDA 02: Remove predictors
+We saw that there were 22 predictors in the data set, however, not all of them are useful for the purpose of the task, so we will omit these predictors from the data set.
+
+```{r}
+car <- car %>%
+  select(-c(`Driving Start Time`, `Driving Finish Time`, `Max Engine Oil Temp`, 
+            `Fuel Cost`, `Speeding Normal count`, `Speeding Hard count`, 
+            `Rapid Acc. Hard Count`, `Rapid Acc. Normal Count`, `Driving Time`))
+head(car)
+```
+
+\newpage
+### EDA 03: Clean columns 
+We will now clean the columns, converting them into the right form and removing the units of measurement for each data point.
+
+```{r}
+# Remove units of measurement 
+car$Distance <- str_remove_all(car$Distance, "km")
+car$`Avr. Speed` <- str_remove_all(car$`Avr. Speed`, "km/h")
+car$`Max Speed` <- str_remove_all(car$`Max Speed`, "km/h")
+car$`Avr. RPM` <- str_remove_all(car$`Avr. RPM`, "rpm")
+car$`Max RPM` <- str_remove_all(car$`Max RPM`, "rpm")
+car$`Max Coolant Temp` <- str_remove_all(car$`Max Coolant Temp`, "°C")
+car$`Fuel effciency` <- str_remove_all(car$`Fuel effciency`, "L/100km")
+
+# Convert to numeric
+car$Distance <-  as.numeric(car$Distance)
+car$`Avr. Speed` <- as.numeric(car$`Avr. Speed`)
+car$`Max Speed` <- as.numeric(car$`Max Speed`)
+car$`Avr. RPM` <- as.numeric(car$`Avr. RPM`)
+car$`Max RPM` <- as.numeric(car$`Max RPM`)
+car$`Max Coolant Temp` <- as.numeric(car$`Max Coolant Temp`)
+car$`Fuel effciency` <- as.numeric(car$`Fuel effciency`)
+car$`Safe Driving Score` <- as.numeric(car$`Safe Driving Score`)
+car$`Eco Driving Score` <- as.numeric(car$`Eco Driving Score`)
+```
+
+### EDA 04: Skim the data
+we will skim the data to show many may rows we have in the data set, to see the type of each column and to get basic summary statistics for each column.
+```{r}
+skimr::skim_without_charts(car)
+```
+
+### EDA 05: Distribution of Response Variable 
+```{r}
+car %>%
+  ggplot(aes(`Fuel effciency`)) +
+  geom_histogram(col = "black", fill = "orange", bins = 20) +
+  xlab("Fuel Efficiency") +
+  ylab("Count") +
+  ggtitle("A Plot of the Distribution of Fuel Efficiency") 
+```
+
+\newpage
+### EDA 06: Relationship Between Predictors and Response Variable
+Now we will investigate the relationships between all of the the predictors and the fuel efficiency.
+
+```{r fig2, fig.cap = "A Plot of Student Popularity against All Predictors", warnings = FALSE}
+car %>%
+  select(-Address) %>%
+  gather(-`Fuel effciency`, key = "var", value = "value") %>%
+  ggplot(aes(value, `Fuel effciency`)) +
+  geom_point() +
+  facet_wrap(~var, scales = "free") +
+  xlab("Value") +
+  ylab("Fuel Efficiency") +
+  ggtitle("A Plot of Fuel Efficiency against All Predictors") 
+```
+
+\newpage
+## Preprocessing
+Now that the data has be cleaned and relationships between the predictors and the response variable have been investigated, it is time to preprocess.
+
+### Preprocessing 01: Split into train and test
+The data will be split into a training and testing set. The training set will be used to build the model while the testing set will test the predictions made by the model and will ensure that we don't under fit or over fit the model to the data. 
+```{r}
+car_split <- initial_split(car, strata = `Fuel effciency`)
+car_train <- training(car_split)
+car_test <- testing(car_split)
+```
+
+### Preprocessing 02: Create the recipe
+We will create dummy variables for all the nomial predictors, which in this case is the address.
+```{r}
+car_recipe <-
+  recipe(`Fuel effciency` ~., data = car_train) %>%
+  step_dummy(all_nominal()) %>% 
+  step_normalize(all_predictors()) %>%
+  step_center(all_predictors()) %>% 
+  step_scale(all_predictors())
+```
+
+\newpage
+## Modelling
+
+### Modelling 01: Create the model
+We are using ridge regression and we will be tuning the penalty term. For ridge regression the mixture term equals 0, if we were to do lasso regression we would set it equal to 1.
+```{r}
+car_model <- 
+  linear_reg(mixture = 0, penalty = tune()) %>% 
+  set_engine("glmnet")
+```
+
+### Modelling 02: Create the workflow
+Using the recipe and model, create a workflow.
+```{r}
+car_wf <- 
+  workflow() %>% 
+  add_model(car_model) %>% 
+  add_recipe(car_recipe)
+```
+
+### Modelling 03: Tune the Penalty Term
+A k-cross validation approach will be used for tuning the penalty term. We will use 10 folds.
+```{r}
+set.seed(2021)
+car_cv <- vfold_cv(car_train, strata = `Fuel effciency`)
+car_cv
+```
+
+Create a tuning grid for the penalty term.
+```{r}
+car_grid <- grid_regular(penalty(), levels = 10)
+```
+
+Tune the penalty term hyper parameter. 
+```{r}
+doParallel::registerDoParallel()
+car_tune <- tune_grid(
+  object = car_wf,
+  resamples = car_cv,
+  grid = car_grid
+)
+```
+
+### Modelling 04: Tuning Results 
+The plot below is a visual representation of the parameter that we are tuning. 
+```{r}
+car_tune %>% autoplot() 
+```
+
+Show the best penalty terms based on the residual mean square error (RMSE).
+```{r}
+show_best(car_tune, metric = "rmse")
+```
+
+### Modelling 05: Finalise the workflow
+Finalise the workflow using the best penalty parameter
+```{r}
+car_wf <- car_wf %>%
+          finalize_workflow(select_best(car_tune, metric = 'rmse'))
+```
+
+### Modelling 06: Fit the model 
+We will fit the training data to the finalized workflow to create model 1.
+```{r}
+M1 <- car_wf %>% fit(car_train)
+```
+
+\newpage
+### Modelling 06: Look at the predictors 
+Look at important variables in the model to see what predictors have a large impact on the fuel efficiency of the car.
+```{r}
+M1 %>% 
+  extract_fit_parsnip() %>% 
+  vip()
+```
+From this plot we can see that the average speed is the predictor that has the largest impact on the fuel efficiency. Other key predictors include distnace and eco driving score.
+
+
+\newpage
+## Prediction
+### Prediction 01: Last Fit in Workflow
+Put the last fit into the workflow and collect the metrics 
+```{r}
+car_wf %>% 
+  last_fit(car_split) %>% 
+  collect_metrics()
+```
+
+### Prediction 02: Predict using Training Data
+We will make predictions using the training data. 
+```{r}
+car_train %>% 
+  add_column(
+    M1 %>% 
+    predict(new_data = car_train)) %>% 
+  ungroup() %>% 
+  rmse(`Fuel effciency`, .pred)
+```
+
+### Prediction 03: Predict using Testing Data
+We will make predictions using the testing data. 
+```{r}
+car_test %>% 
+  add_column(
+    M1 %>% 
+    predict(new_data = car_test)) %>% 
+  ungroup() %>% 
+  rmse(`Fuel effciency`, .pred)
+```
+
+## Final Fit 
+Fit the final workflow to all the training data and then predict for the test data. This is the final model, the single model that will be used for prediction
+```{r warnings = FALSE}
+car_fit <- car_wf %>% last_fit(split = car_split)
+ 
+car_fit %>% 
+  collect_predictions() %>%
+  ggplot(aes(`Fuel effciency`, .pred)) +
+  geom_point() +
+  xlab("Fuel Efficiency") +
+  ylab("Predicted Fuel Efficiency") +
+  ggtitle("The Predicted Fuel Efficiency over the Actual Fuel Efficiency of the Car") +
+  geom_smooth(method = "lm") 
+```
