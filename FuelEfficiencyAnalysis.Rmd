@@ -209,7 +209,7 @@ M1 %>%
   extract_fit_parsnip() %>% 
   vip()
 ```
-From this plot we can see that the average speed is the predictor that has the largest impact on the fuel efficiency. Other key predictors include distnace and eco driving score.
+From this plot we can see that the average speed is the predictor that has the largest impact on the fuel efficiency. Other key predictors include distance and eco driving score.
 
 
 \newpage
@@ -258,3 +258,8 @@ car_fit %>%
   ggtitle("The Predicted Fuel Efficiency over the Actual Fuel Efficiency of the Car") +
   geom_smooth(method = "lm") 
 ```
+
+# Saving the Data 
+```{r}
+filename <- glue::glue("{lubridate::today()}-driving.rds")
+saveRDS(car, filename)
